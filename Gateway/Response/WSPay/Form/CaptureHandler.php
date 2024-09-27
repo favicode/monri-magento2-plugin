@@ -81,16 +81,17 @@ class CaptureHandler implements HandlerInterface
         }
         //@todo: find what is closing the transaction instead of manually reverting the value
         $payment->setIsTransactionClosed(0);
-
-        switch ($this->config->getValue('payment_action', $order->getStoreId())) {
-            case MethodInterface::ACTION_AUTHORIZE:
+        switch ($response['Completed']) {
+            case '0':
                 $payment->registerAuthorizationNotification(
                     $order->getBaseGrandTotal()
                 );
                 break;
-            case MethodInterface::ACTION_AUTHORIZE_CAPTURE:
+            case '1':
                 $order->setState(Order::STATE_PROCESSING);
-                $payment->capture();
+                $payment->registerCaptureNotification(
+                    $order->getBaseGrandTotal()
+                );
                 break;
         }
 
